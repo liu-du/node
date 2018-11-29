@@ -1,5 +1,4 @@
-
-const products = [];
+const Product = require('../models/product');
 
 // /admin/add-product => GET
 exports.getAddProduct = (req, res, next) => {
@@ -14,17 +13,21 @@ exports.getAddProduct = (req, res, next) => {
 
 // /admin/product => POST
 exports.postAddProduct = (req, res, next) => {
-    products.push({ title: req.body.title });
+    const product = new Product(req.body.title);
+    product.save();
     res.redirect('/');
 };
 
 exports.getProducts = (req, res, next) => {
-    res.render('shop', {
-        prods: products,
-        pageTitle: 'Shop',
-        path: '/',
-        hasProducts: products.length > 0,
-        activeShop: true,
-        productCSS: true
+    // fectchAll takes a call back so it doesn't block!
+    Product.fetchAll(products => {
+        res.render('shop', {
+            prods: products,
+            pageTitle: 'Shop',
+            path: '/',
+            hasProducts: products.length > 0,
+            activeShop: true,
+            productCSS: true
+        });
     });
 };
