@@ -11,6 +11,18 @@ exports.getProducts = (req, res, next) => {
     });
 };
 
+exports.getProduct = (req, res, next) => {
+    // fectchAll takes a call back so it doesn't block!
+    const productId = req.params.productId;
+    Product.findById(productId, p => {
+        res.render('shop/product-detail', {
+            product: p,
+            pageTitle: p.title,
+            path: '/products'
+        });
+    });
+};
+
 exports.getIndex = (req, res, next) => {
     Product.fetchAll(products => {
         res.render('shop/index', {
@@ -30,6 +42,18 @@ exports.getCart = (req, res, next) => {
         });
     });
 };
+
+exports.postCart = (req, res, next) => {
+    const productId = req.body.productId;
+    Product.findById(productId, p => {
+        res.render('shop/cart', {
+            pageTitle: 'Your Cart',
+            product: p,
+            path: '/cart'
+        });
+    });
+}
+
 
 exports.getOrders = (req, res, next) => {
     Product.fetchAll(products => {
