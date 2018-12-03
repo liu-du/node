@@ -4,10 +4,10 @@ const Cart = require('../models/cart');
 exports.getProducts = (req, res, next) => {
     // fectchAll takes a call back so it doesn't block!
     Product
-        .fetchAll()
-        .then(([rows, fieldData]) => {
+        .findAll()
+        .then(products => {
             res.render('shop/product-list', {
-                prods: rows,
+                prods: products,
                 pageTitle: 'All Products',
                 path: '/products'
             });
@@ -20,10 +20,12 @@ exports.getProduct = (req, res, next) => {
     const productId = req.params.productId;
     Product
         .findById(productId)
-        .then(([[p]]) => {
+        // .findAll({where: {id: productId}})
+        .then(product => {
+            console.log(product);
             res.render('shop/product-detail', {
-                product: p,
-                pageTitle: p.title,
+                product: product,
+                pageTitle: product.title,
                 path: '/products'
             });
         })
@@ -32,18 +34,15 @@ exports.getProduct = (req, res, next) => {
 
 exports.getIndex = (req, res, next) => {
     Product
-        .fetchAll()
-        .then(([rows, fieldData]) => {
-            console.log(rows);
-            console.log(fieldData);
+        .findAll()
+        .then(products => {
             res.render('shop/index', {
-                prods: rows,
+                prods: products,
                 pageTitle: 'Shop',
                 path: '/'
             });
         })
         .catch(err => console.log(err));
-
 };
 
 exports.getCart = (req, res, next) => {
