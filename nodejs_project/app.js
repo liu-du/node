@@ -6,8 +6,8 @@ const adminRoutes = require('./routes/admin');
 const shopRoutes = require('./routes/shop');
 const errorController = require('./controllers/error');
 const sequelize = require('./util/database');
-const Product = require('./models/product')
-const User = require('./models/user')
+const Product = require('./models/product');
+const User = require('./models/user');
 const Cart = require('./models/cart');
 const CartItem = require('./models/cart-item');
 const Order = require('./models/order');
@@ -28,7 +28,7 @@ app.use((req, res, next) => {
             next();
         })
         .catch(err => console.log(err));
-})
+});
 
 app.use('/admin', adminRoutes.routes);
 app.use(shopRoutes);
@@ -38,21 +38,20 @@ app.use(errorController.get404);
 Product.belongsTo(User, { constraints: true, onDelete: 'CASCADE' });
 User.hasMany(Product);
 
-Cart.belongsTo(User)
 User.hasOne(Cart);
-Cart.belongsToMany(Product, {through: CartItem});
-Product.belongsToMany(Cart, {through: CartItem});
+Cart.belongsTo(User);
+Cart.belongsToMany(Product, { through: CartItem });
+Product.belongsToMany(Cart, { through: CartItem });
 
 Order.belongsTo(User);
 User.hasMany(Order);
-Order.belongsToMany(Product, {through: OrderItem});
-Product.belongsToMany(Order, {through: OrderItem})
+Order.belongsToMany(Product, { through: OrderItem });
 
 
 sequelize
-    // .sync({force: true})
-    .sync()
-    .then(_ => {
+    .sync({force: true})
+    // .sync()
+    .then(() => {
         return User.findById(1);
     })
     .then(user => {
@@ -64,8 +63,8 @@ sequelize
     .then(user => {
         return user.createCart();
     })
-    .then(_ => {
-        return app.listen(3000);
+    .then(cart => {
+        app.listen(3000);
     })
     .catch(err => {
         console.log(err);
