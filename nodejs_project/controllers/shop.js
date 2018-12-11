@@ -1,4 +1,5 @@
 const Product = require('../models/product');
+const mongodb = require('mongodb');
 
 exports.getProducts = (req, res, next) => {
     // fectchAll takes a call back so it doesn't block!
@@ -21,7 +22,7 @@ exports.getProduct = (req, res, next) => {
         .findById(productId)
         // .findAll({where: {id: productId}})
         .then(product => {
-            // console.log(product.toJSON());
+            console.log(product);
             res.render('shop/product-detail', {
                 product: product,
                 pageTitle: product.title,
