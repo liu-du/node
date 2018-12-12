@@ -22,7 +22,6 @@ exports.getProduct = (req, res, next) => {
         .findById(productId)
         // .findAll({where: {id: productId}})
         .then(product => {
-            console.log(product);
             res.render('shop/product-detail', {
                 product: product,
                 pageTitle: product.title,
@@ -47,7 +46,6 @@ exports.getIndex = (req, res, next) => {
 };
 
 exports.getCart = (req, res, next) => {
-    console.log("Users hhhhhhhhh", req.user, "\n\n\n");
     req.user
         .getCart()
         .then(products => {
@@ -69,7 +67,6 @@ exports.postCart = (req, res, next) => {
             return req.user.addToCart(product);
         })
         .then(result => {
-            console.log(result);
             res.redirect('/cart');
         })
         .catch(err => console.log(err));
@@ -77,7 +74,6 @@ exports.postCart = (req, res, next) => {
 
 exports.postCartDeleteProduct = (req, res, next) => {
     const productId = req.body.productId;
-    console.log("user start", req.user, "user end");
     req.user
         .deleteItemFromCart(productId)
         .then(result => {
@@ -99,30 +95,8 @@ exports.getOrders = (req, res, next) => {
 };
 
 exports.postOrders = (req, res, next) => {
-    let fetchedCart;
     req.user
-        .getCart()
-        .then(cart => {
-            fetchedCart = cart;
-            return cart.getProducts();
-        })
-        .then(products => {
-            req.user
-                .createOrder()
-                .then(order => {
-                    return order.addProducts(
-                        products.map(product => {
-                            product.orderItem = { quanity: product.cartItem.quantity };
-                            return product;
-                        })
-                    );
-                })
-                .catch(err => console.log(err));
-        })
-        .then(result => {
-            // console.log("\n\n\n\n\n\n");
-            return fetchedCart.setProducts(null);
-        })
+        .addOrder()
         .then(result => {
             // console.log("\n\n\n\n\n\n");
             res.redirect('/orders');
