@@ -3,9 +3,9 @@ const mongodb = require('mongodb');
 
 exports.getProducts = (req, res, next) => {
     // fectchAll takes a call back so it doesn't block!
-    Product
-        .fetchAll()
+    Product.find()
         .then(products => {
+            console.log(products);
             res.render('shop/product-list', {
                 prods: products,
                 pageTitle: 'All Products',
@@ -20,7 +20,6 @@ exports.getProduct = (req, res, next) => {
     const productId = req.params.productId;
     Product
         .findById(productId)
-        // .findAll({where: {id: productId}})
         .then(product => {
             res.render('shop/product-detail', {
                 product: product,
@@ -33,7 +32,7 @@ exports.getProduct = (req, res, next) => {
 
 exports.getIndex = (req, res, next) => {
     Product
-        .fetchAll()
+        .find()
         .then(products => {
             // console.log(products);
             res.render('shop/index', {

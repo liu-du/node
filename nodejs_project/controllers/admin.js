@@ -61,10 +61,15 @@ exports.postEditProduct = (req, res, next) => {
     const updatedImageUrl = req.body.imageUrl;
     const updatedPrice = req.body.price;
     const updatedDescription = req.body.description;
-    const product = new Product(updatedTitle, updatedPrice, updatedDescription, updatedImageUrl, productId);
-
-    product
-        .save()
+    Product
+        .findById(productId)
+        .then(product => { 
+            product.title = updatedTitle;
+            product.price = updatedPrice;
+            product.description = updatedDescription;
+            product.imageUrl = updatedImageUrl;
+            return product.save();
+        })
         .then(result => {
             res.redirect('/admin/products');
         })
@@ -73,7 +78,7 @@ exports.postEditProduct = (req, res, next) => {
 
 exports.getProducts = (req, res, next) => {
     Product
-        .fetchAll()
+        .find()
         .then(products => {
             res.render('admin/products', {
                 prods: products,
@@ -86,8 +91,7 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
     const productId = req.body.productId;
     Product
-        .deleteById(productId)
-        // .then(product => product.remove({"_id": new mongodb.ObjectID(productId)}))
+        .findByIdAndRemove(productId)
         .then(_ => res.redirect('/admin/products'))
         .catch(err => console.log(err));
 };
