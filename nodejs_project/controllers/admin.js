@@ -1,5 +1,4 @@
 const Product = require('../models/product');
-const mongodb = require('mongodb');
 
 // /admin/add-product => GET
 exports.getAddProduct = (req, res, next) => {
@@ -20,7 +19,8 @@ exports.postAddProduct = (req, res, next) => {
         title: title, 
         price: price, 
         description: description, 
-        imageUrl: imageUrl
+        imageUrl: imageUrl,
+        userId: req.user
     });
 
     product
@@ -79,7 +79,10 @@ exports.postEditProduct = (req, res, next) => {
 exports.getProducts = (req, res, next) => {
     Product
         .find()
+        // .select('title price -_id') // select is like select in sql...
+        // .populate('userId', 'name') // populate is kind of like a join
         .then(products => {
+            console.log(products);
             res.render('admin/products', {
                 prods: products,
                 pageTitle: 'All Products',
