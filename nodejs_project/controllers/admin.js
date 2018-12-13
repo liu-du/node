@@ -79,10 +79,9 @@ exports.postEditProduct = (req, res, next) => {
 exports.getProducts = (req, res, next) => {
     Product
         .find()
-        // .select('title price -_id') // select is like select in sql...
-        // .populate('userId', 'name') // populate is kind of like a join
+        .select('title price -_id') // select is like select in sql...
+        .populate('userId', 'name') // populate is kind of like a join
         .then(products => {
-            console.log(products);
             res.render('admin/products', {
                 prods: products,
                 pageTitle: 'All Products',
