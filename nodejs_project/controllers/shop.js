@@ -1,6 +1,5 @@
 const Product = require('../models/product');
 const Order = require('../models/order');
-const mongodb = require('mongodb');
 
 exports.getProducts = (req, res, next) => {
     // fectchAll takes a call back so it doesn't block!
@@ -11,7 +10,7 @@ exports.getProducts = (req, res, next) => {
                 prods: products,
                 pageTitle: 'All Products',
                 path: '/products',
-                isAuthenticated: req.isLoggedIn
+                isAuthenticated: req.session.isLoggedIn
             });
         })
         .catch(err => console.log(err));
@@ -27,7 +26,7 @@ exports.getProduct = (req, res, next) => {
                 product: product,
                 pageTitle: product.title,
                 path: '/products',
-                isAuthenticated: req.isLoggedIn
+                isAuthenticated: req.session.isLoggedIn
             });
         })
         .catch(err => console.log(err));
@@ -37,18 +36,18 @@ exports.getIndex = (req, res, next) => {
     Product
         .find()
         .then(products => {
-            // console.log(products);
             res.render('shop/index', {
                 prods: products,
                 pageTitle: 'Shop',
                 path: '/',
-                isAuthenticated: req.isLoggedIn
+                isAuthenticated: req.session.isLoggedIn
             });
         })
         .catch(err => console.log(err));
 };
 
 exports.getCart = (req, res, next) => {
+    // console.log(req.session.user);
     req.user
         // .select('cart')
         .populate('cart.items.productId')
@@ -59,7 +58,7 @@ exports.getCart = (req, res, next) => {
                 prods: products,
                 pageTitle: 'Your Cart',
                 path: '/cart',
-                isAuthenticated: req.isLoggedIn
+                isAuthenticated: req.session.isLoggedIn
             });
         })
         .catch(err => console.log(err));
@@ -96,7 +95,8 @@ exports.getOrders = (req, res, next) => {
             res.render('shop/orders', {
                 pageTitle: 'Your Orders',
                 path: '/orders',
-                orders: orders
+                orders: orders,
+                isAuthenticated: req.session.isLoggedIn
             });
         });
 };
