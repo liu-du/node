@@ -6,7 +6,7 @@ exports.getAddProduct = (req, res, next) => {
         pageTitle: 'Add Product',
         path: '/admin/add-product',
         editing: false,
-        isAuthenticated: req.isLoggedIn
+        isAuthenticated: req.session.isLoggedIn
     });
 };
 
@@ -51,7 +51,7 @@ exports.getEditProduct = (req, res, next) => {
                     path: '/admin/edit-product',
                     editing: editMode,
                     product: product,
-                    isAuthenticated: req.isLoggedIn
+                    isAuthenticated: req.session.isLoggedIn
                 });
             };
         });
@@ -81,14 +81,14 @@ exports.postEditProduct = (req, res, next) => {
 exports.getProducts = (req, res, next) => {
     Product
         .find()
-        .select('title price -_id') // select is like select in sql...
+        // .select('title price -_id') // select is like select in sql...
         .populate('userId', 'name') // populate is kind of like a join
         .then(products => {
             res.render('admin/products', {
                 prods: products,
                 pageTitle: 'All Products',
                 path: '/admin/products',
-                isAuthenticated: req.isLoggedIn
+                isAuthenticated: req.session.isLoggedIn
             });
         });
 };
