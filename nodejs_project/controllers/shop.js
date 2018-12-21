@@ -5,12 +5,10 @@ exports.getProducts = (req, res, next) => {
     // fectchAll takes a call back so it doesn't block!
     Product.find()
         .then(products => {
-            console.log(products);
             res.render('shop/product-list', {
                 prods: products,
                 pageTitle: 'All Products',
-                path: '/products',
-                isAuthenticated: req.session.isLoggedIn
+                path: '/products'
             });
         })
         .catch(err => console.log(err));
@@ -25,8 +23,7 @@ exports.getProduct = (req, res, next) => {
             res.render('shop/product-detail', {
                 product: product,
                 pageTitle: product.title,
-                path: '/products',
-                isAuthenticated: req.session.isLoggedIn
+                path: '/products'
             });
         })
         .catch(err => console.log(err));
@@ -39,8 +36,7 @@ exports.getIndex = (req, res, next) => {
             res.render('shop/index', {
                 prods: products,
                 pageTitle: 'Shop',
-                path: '/',
-                isAuthenticated: req.session.isLoggedIn
+                path: '/'
             });
         })
         .catch(err => console.log(err));
@@ -57,8 +53,7 @@ exports.getCart = (req, res, next) => {
             res.render('shop/cart', {
                 prods: products,
                 pageTitle: 'Your Cart',
-                path: '/cart',
-                isAuthenticated: req.session.isLoggedIn
+                path: '/cart'
             });
         })
         .catch(err => console.log(err));
@@ -95,8 +90,7 @@ exports.getOrders = (req, res, next) => {
             res.render('shop/orders', {
                 pageTitle: 'Your Orders',
                 path: '/orders',
-                orders: orders,
-                isAuthenticated: req.session.isLoggedIn
+                orders: orders
             });
         });
 };
@@ -106,15 +100,14 @@ exports.postOrders = (req, res, next) => {
         .populate('cart.items.productId')
         .execPopulate()
         .then(user => {
-            console.log(user.cart.items);
             const order = new Order({
                 products: 
                     user.cart.items.map(item => {
                         return {quantity: item.quantity, product: { ...item.productId._doc }}
                     }),
                 user: {
-                    name: req.user.name,
-                    userId: req.user
+                    userId: req.user,
+                    email: req.user.email
                 }
             });
             return order.save();

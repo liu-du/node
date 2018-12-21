@@ -117,3 +117,32 @@ main {
     background-color: #eb8d00;
     color: white;
 }
+
+.user-message {
+    margin: auto;
+    padding: 0.5rem;
+    width: 90%;
+    border: 1px solid rgb(35, 167, 208);
+    background: #78bbbd;
+    border-radius: 0.5rem;
+    text-align: center;
+}
+
+.user-message--error {
+    border-color: #e35449;
+    background: #e0645c
+}
+
+@media (min-width: 768px) {
+    .main-header__nav {
+        display: flex;
+    }
+
+    #side-menu-toggle {
+        display: none;
+    }
+
+    .user-message {
+        width: 30rem;
+    }
+}

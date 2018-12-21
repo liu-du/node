@@ -3,10 +3,16 @@ const bcrypt = require('bcryptjs');
 
 exports.getLogin = (req, res, next) => {
     // const isLoggedIn = req.get('Cookie').split("=")[1] === 'true';
+    let message = req.flash('error');
+    if (message.length > 0) {
+        message = message[0];
+    } else {
+        message = null;
+    }
     res.render('auth/login', {
         path: '/login',
         pageTitle: 'Login',
-        isAuthenticated: req.session.isLoggedIn
+        errorMessage: message
     });
 };
 
@@ -17,6 +23,7 @@ exports.postLogin = (req, res, next) => {
         })
         .then(user => {
             if (!user) {
+                req.flash('error', 'Invalid email.');
                 return res.redirect('/login');
             }
 
@@ -31,6 +38,7 @@ exports.postLogin = (req, res, next) => {
                             res.redirect('/');
                         });
                     }
+                    req.flash('error', 'Invalid password.');
                     return res.redirect('/login');
                 })
                 .catch(err => {
@@ -42,10 +50,19 @@ exports.postLogin = (req, res, next) => {
 }
 
 exports.getSignup = (req, res, next) => {
+    let message = req.flash('error');
+    if (message.length > 0) {
+        message = message[0];
+        messageType = 'error';
+    } else {
+        message = 'Password must be at least 3 characters';
+        messageType = 'info';
+    }
     res.render('auth/signup.ejs', {
         path: '/signup',
         pageTitle: 'Sign up',
-        isAuthenticated: false
+        errorMessage: message,
+        messageType: messageType
     })
 }
 
@@ -57,8 +74,16 @@ exports.postSignup = (req, res, next) => {
     User.findOne({email: email})
         .then(userDoc => {
             if (userDoc) {
+                req.flash('error', 'Already signed up.')
+                return res.redirect('/signup');
+            } else if (password.length < 3) {
+                req.flash('error', 'Password length has to be at least 3.');
+                return res.redirect('/signup');
+            } else if (password !== confirmPssword) {
+                req.flash('error', "Password doesn't agree.")
                 return res.redirect('/signup');
             }
+
             return bcrypt
                 .hash(password, 12)
                 .then(hashedPassword => {
