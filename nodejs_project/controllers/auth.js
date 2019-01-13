@@ -16,13 +16,16 @@ exports.getLogin = (req, res, next) => {
     let message = req.flash('error');
     if (message.length > 0) {
         message = message[0];
+        messageType = 'error';
     } else {
         message = null;
+        messageType = 'info';
     }
     res.render('auth/login', {
         path: '/login',
         pageTitle: 'Login',
-        errorMessage: message
+        errorMessage: message,
+        messageType: messageType
     });
 };
 
@@ -33,7 +36,7 @@ exports.postLogin = (req, res, next) => {
         })
         .then(user => {
             if (!user) {
-                req.flash('error', 'Invalid email.');
+                req.flash('error', 'Invalid credentials.');
                 return res.redirect('/login');
             }
 

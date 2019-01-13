@@ -67,21 +67,25 @@ exports.postEditProduct = (req, res, next) => {
     Product
         .findById(productId)
         .then(product => { 
+            if (product.userId.toString() !== req.user._id.toString()) {
+                return res.redirect('/');
+            }
             product.title = updatedTitle;
             product.price = updatedPrice;
             product.description = updatedDescription;
             product.imageUrl = updatedImageUrl;
-            return product.save();
-        })
-        .then(result => {
-            res.redirect('/admin/products');
+            return product
+                .save()
+                .then(result => {
+                    res.redirect('/admin/products');
+                });
         })
         .catch(err => console.log(err));
 };
 
 exports.getProducts = (req, res, next) => {
     Product
-        .find()
+        .find({userId: req.user._id})
         // .select('title price -_id') // select is like select in sql...
         .populate('userId', 'name') // populate is kind of like a join
         .then(products => {
@@ -96,7 +100,7 @@ exports.getProducts = (req, res, next) => {
 exports.postDeleteProduct = (req, res, next) => {
     const productId = req.body.productId;
     Product
-        .findByIdAndRemove(productId)
+        .deleteOne({_id: productId, userId: req.user._id})
         .then(_ => res.redirect('/admin/products'))
         .catch(err => console.log(err));
 };
