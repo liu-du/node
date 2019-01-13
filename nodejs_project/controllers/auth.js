@@ -1,3 +1,4 @@
+const crypto = require('crypto');
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
 const nodemailer = require('nodemailer');
@@ -109,7 +110,7 @@ exports.postSignup = (req, res, next) => {
                     res.redirect('/login');
                     transporter.sendMail({
                         to: email,
-                        from: 'shop@cat',
+                        from: 'ldiuukz@gmail.com',
                         subject: 'Sign up',
                         html: '<h1>You successfully signed up!</h1>'
                     })
@@ -125,3 +126,119 @@ exports.postLogout = (req, res, next) => {
         res.redirect('/');
     });
 }
+
+exports.getReset = (req, res, next) => {
+    let message = req.flash('error');
+    if (message.length > 0) {
+        message = message[0];
+        messageType = 'error';
+    } else {
+        message = 'Password must be at least 3 characters';
+        messageType = 'info';
+    }
+
+    res.render('auth/reset.ejs', {
+        path: '/reset',
+        pageTitle: 'Reset password',
+        errorMessage: message,
+        messageType: messageType
+    });
+};
+
+exports.postReset = (req, res, next) => {
+    crypto.randomBytes(32, (err, buffer) => {
+        if (err) {
+            console.log(err);
+            return res.redirect('/reset');
+        }
+        const token = buffer.toString('hex');
+
+        User.findOne({email: req.body.email})
+            .then(user => {
+                if (!user) {
+                    req.flash('error', 'No account with that email found.');
+                    return res.redirect('/reset');
+                }
+
+                user.resetToken = token;
+                user.resetTokenExpiration = Date.now() + 3600000;
+                return user.save();
+            })
+            .then(result => {
+                res.redirect('/');
+                transporter.sendMail({
+                    from: 'ldiuukz@gmail.com',
+                    to: req.body.email,
+                    subject: 'Password Reset shop@cat',
+                    html: `
+                        <p>You requested password reset</p>
+                        <p>Click this <a href="http://localhost:3000/reset/${token}">link</a> to set a new password</p>
+                    `
+                });
+            })
+            .catch(err => console.log(err));
+    });
+};
+
+exports.getNewPassword = (req, res, next) => {
+
+    const token = req.params.token;
+    User.findOne({resetToken: token, resetTokenExpiration: {$gt: Date.now()}})
+        .then(user => {
+            let message = req.flash('error');
+            if (message.length > 0) {
+                message = message[0];
+                messageType = 'error';
+            } else {
+                message = 'Password must be at least 3 characters';
+                messageType = 'info';
+            }
+
+            res.render('auth/new-password.ejs', {
+                path: '/new-password',
+                pageTitle: 'Set New Password',
+                errorMessage: message,
+                messageType: messageType,
+                userEmail: user.email,
+                passwordToken: token
+            });
+        })
+        .catch(err => console.log(err));
+};
+
+exports.postNewPassword = (req, res, next) => {
+    const email = req.body.userEmail;
+    const password = req.body.password;
+    const confirmPassword = req.body.confirmPassword;
+    const token = req.body.passwordToken;
+
+    User.findOne({email: email, resetToken: token, resetTokenExpiration: {$gt: Date.now()}})
+        .then(user => {
+            if (password.length < 3) {
+                req.flash('error', 'Password length has to be at least 3.');
+                return res.redirect('/new-password');
+            } else if (password !== confirmPassword) {
+                req.flash('error', "Password doesn't agree.")
+                return res.redirect('/new-password');
+            }
+            return bcrypt
+                .hash(password, 12)
+                .then(hashedPassword => {
+                    user.password = hashedPassword;
+                    user.resetToken = undefined;
+                    user.resetTokenExpiration = undefined;
+                    user.save();
+                })
+                .catch(console.log);
+        })
+        .then(result => {
+            res.redirect('/login');
+            transporter.sendMail({
+                to: email,
+                from: 'ldiuukz@gmail.com',
+                subject: 'Password change confirmation',
+                html: '<h1>You successfully reset your password!</h1>'
+            });
+        })
+        .catch(console.log);
+};
