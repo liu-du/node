@@ -1,5 +1,14 @@
 const User = require('../models/user');
 const bcrypt = require('bcryptjs');
+const nodemailer = require('nodemailer');
+const sendgridTransport = require('nodemailer-sendgrid-transport');
+const sendGridApi = require('../misc/sendGridApi');
+
+const transporter = nodemailer.createTransport(sendgridTransport({
+    auth: {
+        api_key: sendGridApi()
+    }
+}));
 
 exports.getLogin = (req, res, next) => {
     // const isLoggedIn = req.get('Cookie').split("=")[1] === 'true';
@@ -69,17 +78,19 @@ exports.getSignup = (req, res, next) => {
 exports.postSignup = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
-    const confirmPssword = req.body.confirmPssword;
+    const confirmPassword = req.body.confirmPassword;
+
 
     User.findOne({email: email})
         .then(userDoc => {
+
             if (userDoc) {
                 req.flash('error', 'Already signed up.')
-                return res.redirect('/signup');
+                return res.redirect('/login');
             } else if (password.length < 3) {
                 req.flash('error', 'Password length has to be at least 3.');
                 return res.redirect('/signup');
-            } else if (password !== confirmPssword) {
+            } else if (password !== confirmPassword) {
                 req.flash('error', "Password doesn't agree.")
                 return res.redirect('/signup');
             }
@@ -96,7 +107,14 @@ exports.postSignup = (req, res, next) => {
                 })
                 .then(result => {
                     res.redirect('/login');
-                });
+                    transporter.sendMail({
+                        to: email,
+                        from: 'shop@cat',
+                        subject: 'Sign up',
+                        html: '<h1>You successfully signed up!</h1>'
+                    })
+                })
+                .catch(err => console.log(err));
         })
         .catch(err => console.log(err))
 }
