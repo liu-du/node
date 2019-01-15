@@ -29,6 +29,7 @@
 }
 
 
+.form-control textarea.invalid,
 .form-control input.invalid {
     border-color: red;
 }
