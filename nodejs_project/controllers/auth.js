@@ -34,12 +34,14 @@ exports.postLogin = (req, res, next) => {
     const errors = validationResult(req);
 
     if (!errors.isEmpty()) {
-        return res.render('auth/login', {
-            path: '/login',
-            pageTitle: 'Login',
-            errorMessage: errors.array()[0].msg,
-            messageType: 'error'
-        });
+        return res
+            .status(422)
+            .render('auth/login', {
+                path: '/login',
+                pageTitle: 'Login',
+                errorMessage: errors.array()[0].msg,
+                messageType: 'error'
+            });
     }
 
     User
@@ -78,14 +80,19 @@ exports.getSignup = (req, res, next) => {
         message = message[0];
         messageType = 'error';
     } else {
-        message = 'Password must be at least 3 characters';
+        message = 'Password must be number and text only and at least 5 characters';
         messageType = 'info';
     }
     res.render('auth/signup.ejs', {
         path: '/signup',
         pageTitle: 'Sign up',
         errorMessage: message,
-        messageType: messageType
+        messageType: messageType,
+        oldInput: {
+            email: '',
+            password: '',
+            confirmPassword: ''
+        }
     })
 }
 
@@ -100,7 +107,12 @@ exports.postSignup = (req, res, next) => {
                 path: '/signup',
                 pageTitle: 'Sign up',
                 errorMessage: errors.array()[0].msg,
-                messageType: 'error'
+                messageType: 'error',
+                oldInput: {
+                    email: email,
+                    password: password,
+                    confirmPassword: req.body.confirmPassword
+                }
             });
     }
 
