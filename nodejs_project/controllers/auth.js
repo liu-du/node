@@ -31,10 +31,19 @@ exports.getLogin = (req, res, next) => {
 };
 
 exports.postLogin = (req, res, next) => {
+    const errors = validationResult(req);
+
+    if (!errors.isEmpty()) {
+        return res.render('auth/login', {
+            path: '/login',
+            pageTitle: 'Login',
+            errorMessage: errors.array()[0].msg,
+            messageType: 'error'
+        });
+    }
+
     User
-        .findOne({
-            email: req.body.email, 
-        })
+        .findOne({ email: req.body.email })
         .then(user => {
             if (!user) {
                 req.flash('error', 'Invalid credentials.');
@@ -83,11 +92,9 @@ exports.getSignup = (req, res, next) => {
 exports.postSignup = (req, res, next) => {
     const email = req.body.email;
     const password = req.body.password;
-    const confirmPassword = req.body.confirmPassword;
-
     const errors = validationResult(req);
+
     if (!errors.isEmpty()) {
-        console.log(errors.array());
         return res.status(422).
             render('auth/signup.ejs', {
                 path: '/signup',
@@ -99,19 +106,7 @@ exports.postSignup = (req, res, next) => {
 
     User.findOne({email: email})
         .then(userDoc => {
-
-            if (userDoc) {
-                req.flash('error', 'Already signed up.')
-                return res.redirect('/login');
-            } else if (password.length < 3) {
-                req.flash('error', 'Password length has to be at least 3.');
-                return res.redirect('/signup');
-            } else if (password !== confirmPassword) {
-                req.flash('error', "Password doesn't agree.")
-                return res.redirect('/signup');
-            }
-
-            return bcrypt
+            bcrypt
                 .hash(password, 12)
                 .then(hashedPassword => {
                     const user = new User({
@@ -123,7 +118,7 @@ exports.postSignup = (req, res, next) => {
                 })
                 .then(result => {
                     res.redirect('/login');
-                    transporter.sendMail({
+                    return transporter.sendMail({
                         to: email,
                         from: 'ldiuukz@gmail.com',
                         subject: 'Sign up',
@@ -132,7 +127,7 @@ exports.postSignup = (req, res, next) => {
                 })
                 .catch(err => console.log(err));
         })
-        .catch(err => console.log(err))
+        .catch(err => console.log(err));
 }
 
 exports.postLogout = (req, res, next) => {
