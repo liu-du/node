@@ -13,20 +13,14 @@ const transporter = nodemailer.createTransport(sendgridTransport({
 }));
 
 exports.getLogin = (req, res, next) => {
-    // const isLoggedIn = req.get('Cookie').split("=")[1] === 'true';
-    let message = req.flash('error');
-    if (message.length > 0) {
-        message = message[0];
-        messageType = 'error';
-    } else {
-        message = null;
-        messageType = 'info';
-    }
+    // no redirect so user can only get here by click login
     res.render('auth/login', {
         path: '/login',
         pageTitle: 'Login',
-        errorMessage: message,
-        messageType: messageType
+        errorMessage: undefined,
+        messageType: 'info',
+        oldInput: {email: '', password: ''},
+        validationErrors: []
     });
 };
 
@@ -40,7 +34,12 @@ exports.postLogin = (req, res, next) => {
                 path: '/login',
                 pageTitle: 'Login',
                 errorMessage: errors.array()[0].msg,
-                messageType: 'error'
+                messageType: 'error',
+                oldInput: {
+                    email: req.body.email,
+                    password: req.body.password
+                },
+                validationErrors: errors.array()
             });
     }
 
@@ -48,8 +47,19 @@ exports.postLogin = (req, res, next) => {
         .findOne({ email: req.body.email })
         .then(user => {
             if (!user) {
-                req.flash('error', 'Invalid credentials.');
-                return res.redirect('/login');
+                return res
+                    .status(422)
+                    .render('auth/login', {
+                        path: '/login',
+                        pageTitle: 'Login',
+                        errorMessage: 'Email not signed up.',
+                        messageType: 'error',
+                        oldInput: {
+                            email: req.body.email,
+                            password: req.body.password
+                        },
+                        validationErrors: [{param: 'email'}]
+                    });
             }
 
             bcrypt
@@ -63,8 +73,19 @@ exports.postLogin = (req, res, next) => {
                             res.redirect('/');
                         });
                     }
-                    req.flash('error', 'Invalid password.');
-                    return res.redirect('/login');
+                    return res
+                        .status(422)
+                        .render('auth/login', {
+                            path: '/login',
+                            pageTitle: 'Login',
+                            errorMessage: 'Wrong password.',
+                            messageType: 'error',
+                            oldInput: {
+                                email: req.body.email,
+                                password: req.body.password
+                            },
+                            validationErrors: [{param: 'password'}]
+                        });
                 })
                 .catch(err => {
                     console.log(err);
@@ -92,7 +113,8 @@ exports.getSignup = (req, res, next) => {
             email: '',
             password: '',
             confirmPassword: ''
-        }
+        },
+        validationErrors: []
     })
 }
 
@@ -112,7 +134,8 @@ exports.postSignup = (req, res, next) => {
                     email: email,
                     password: password,
                     confirmPassword: req.body.confirmPassword
-                }
+                },
+                validationErrors: errors.array()
             });
     }
 
