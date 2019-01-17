@@ -11,6 +11,7 @@ const transporter = nodemailer.createTransport(sendgridTransport({
         api_key: sendGridApi()
     }
 }));
+const fromEmail = 'duliujimmy@hotmail.com';
 
 exports.getLogin = (req, res, next) => {
     // no redirect so user can only get here by click login
@@ -160,7 +161,7 @@ exports.postSignup = (req, res, next) => {
                     res.redirect('/login');
                     return transporter.sendMail({
                         to: email,
-                        from: 'ldiuukz@gmail.com',
+                        from: fromEmail,
                         subject: 'Sign up',
                         html: '<h1>You successfully signed up!</h1>'
                     })
@@ -227,7 +228,7 @@ exports.postReset = (req, res, next) => {
             .then(result => {
                 res.redirect('/');
                 transporter.sendMail({
-                    from: 'ldiuukz@gmail.com',
+                    from: fromEmail,
                     to: req.body.email,
                     subject: 'Password Reset shop@cat',
                     html: `
@@ -310,7 +311,7 @@ exports.postNewPassword = (req, res, next) => {
             res.redirect('/login');
             transporter.sendMail({
                 to: email,
-                from: 'ldiuukz@gmail.com',
+                from: fromEmail,
                 subject: 'Password change confirmation',
                 html: '<h1>You successfully reset your password!</h1>'
             });

@@ -27,9 +27,6 @@ router.post('/edit-product', [
         .trim()
         .isLength({ min: 3 })
         .isString(),
-    body('imageUrl', "Invalid URL")
-        .trim()
-        .isURL(),
     body('price', 'Price has to be a decimal number')
         .isFloat(),
     body('description', 'Description cannot be blank')

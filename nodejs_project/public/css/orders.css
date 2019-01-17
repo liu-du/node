@@ -22,7 +22,7 @@
 }
 
 .orders__products-item {
-    text-align: right;
+    text-align: left;
     padding: 0.5rem 0.5rem; 
     margin: 0.5rem 0rem;
     border: 1px solid #ebbd27;

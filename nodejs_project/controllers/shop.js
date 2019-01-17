@@ -1,5 +1,7 @@
 const Product = require('../models/product');
 const Order = require('../models/order');
+const fs = require('fs');
+const path = require('path');
 
 exports.getProducts = (req, res, next) => {
     // fectchAll takes a call back so it doesn't block!
@@ -166,3 +168,31 @@ exports.getCheckout = (req, res, next) => {
         });
     });
 };
+
+exports.getInvoices = (req, res, next) => {
+    const orderId = req.params.orderId;
+    const invoiceName = 'Invoice-' + orderId + '.pdf';
+    const invoicePath = path.join('data', 'invoices', invoiceName);
+    Order
+        .findById(orderId)
+        .then(order => {
+            if (!order) {
+                return next(new Error('No order found.'));
+            }
+            if (order.user.userId.toString() !== req.user._id.toString()) {
+                return next(new Error('Unauthorized'));
+            }
+            fs.readFile(invoicePath, (err, data) => {
+                if (err) return next();
+                res.setHeader('Content-Type', 'application/pdf');
+                res.setHeader('Content-Disposition', 'inline; filename="' + invoiceName + '"');
+                return res.send(data);
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
+}

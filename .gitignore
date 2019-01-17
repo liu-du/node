@@ -3,3 +3,5 @@
 node_modules/
 misc/
 images/
+.DS_Store
+nodejs_project/data
