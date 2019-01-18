@@ -3,6 +3,9 @@ const Order = require('../models/order');
 const fs = require('fs');
 const path = require('path');
 const PDFDocument = require('pdfkit');
+// Set your secret key: remember to change this to your live secret key in production
+// See your keys here: https://dashboard.stripe.com/account/apikeys
+const stripe = require("stripe")("sk_test_LgObWrhstCfYjhHFFLpqwSIY");
 
 const ITEMS_PER_PAGE = 2;
 
@@ -157,14 +160,52 @@ exports.getOrders = (req, res, next) => {
                 path: '/orders',
                 orders: orders
             });
+        })
+        .catch(err => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
         });
 };
 
-exports.postOrders = (req, res, next) => {
+
+exports.getCheckout = (req, res, next) => {
     req.user
         .populate('cart.items.productId')
         .execPopulate()
         .then(user => {
+            const products = user.cart.items;
+
+            res.render('shop/checkout', {
+                pageTitle: 'Checkout',
+                path: '/checkout',
+                products: products,
+                totalSum: products.map(x => x.quantity * x.productId.price).reduce((x, y) => x + y)
+            });
+        })
+        .catch(err => {
+            console.log(err);
+            const error = new Error(err);
+            error.httpStatusCode = 500;
+            return next(error);
+        });
+};
+
+exports.postOrders = (req, res, next) => {
+
+    // Token is created using Checkout or Elements!
+    // Get the payment token ID submitted by the form:
+    const token = req.body.stripeToken; // Using Express
+
+    let totalSum;
+    req.user
+        .populate('cart.items.productId')
+        .execPopulate()
+        .then(user => {
+            totalSum = user.cart.items
+                .map(p => p.quantity * p.productId.price)
+                .reduce((x, y) => x + y);
             const order = new Order({
                 products: 
                     user.cart.items.map(item => {
@@ -178,6 +219,13 @@ exports.postOrders = (req, res, next) => {
             return order.save();
         })
         .then(result => {
+            const charge = stripe.charges.create({
+                amount: totalSum * 100,
+                currency: 'aud',
+                description: 'All orders',
+                source: token,
+                metadata: {order_id: result._id.toString()}
+            });
             return req.user.clearCart();
         })
         .then(result => {
@@ -192,15 +240,6 @@ exports.postOrders = (req, res, next) => {
 };
 
 
-exports.getCheckout = (req, res, next) => {
-    Product.fetchAll(products => {
-        res.render('shop/checkout', {
-            prods: products,
-            pageTitle: 'Checkout',
-            path: '/checkout',
-        });
-    });
-};
 
 exports.getInvoices = (req, res, next) => {
     const orderId = req.params.orderId;
