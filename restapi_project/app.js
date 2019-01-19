@@ -1,5 +1,6 @@
-const express = require('express');
-const bodyParser = require('body-parser');
+const express = require("express");
+const bodyParser = require("body-parser");
+const mongoose = require("mongoose");
 
 const feedRoutes = require('./routes/feed');
 
@@ -23,6 +24,16 @@ app.use((req, res, next) => {
 
 app.use('/feed', feedRoutes);
 
-app.listen(8080, () => {
-  console.log('\nConnected\n');
-});
+mongoose
+  .connect(
+    "mongodb+srv://jimmy:mac.2018@cluster0-mzvi0.mongodb.net/messages?retryWrites=true"
+  )
+  .then(result => {
+    app.listen(8080);
+  })
+  .then(result => {
+    console.log("\nConnected\n");
+  })
+  .catch(err => {
+    console.log("Error: ", err);
+  });

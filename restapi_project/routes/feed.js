@@ -12,9 +12,6 @@ router.post(
     body('title')
       .trim()
       .isLength({ min: 5 }),
-    body('image')
-      .not()
-      .isEmpty(),
     body('content')
       .trim()
       .isLength({ min: 5 })
