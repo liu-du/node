@@ -13,7 +13,6 @@ const fileStorage = multer.diskStorage({
     cb(null, 'images');
   },
   filename: (req, file, cb) => {
-    console.log(file);
     cb(null, new Date().toISOString() + '.' + file.mimetype.split('/')[1]);
   }
 });
