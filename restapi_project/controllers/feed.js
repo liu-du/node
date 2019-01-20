@@ -5,11 +5,23 @@ const Post = require('../models/post');
 const errHandler = require('../misc/error-handler');
 
 exports.getPosts = (req, res, next) => {
+  const currentPage = req.query.page || 1;
+  const perPage = 2;
+
+  let totalItems;
   Post.find()
+    .countDocuments()
+    .then(count => {
+      totalItems = count;
+      return Post.find()
+        .skip((currentPage - 1) * perPage)
+        .limit(perPage);
+    })
     .then(posts => {
       return res.status(200).json({
         message: 'Fetch posts success',
-        posts: posts
+        posts: posts,
+        totalItems: totalItems
       });
     })
     .catch(err => next(errHandler(err)));
