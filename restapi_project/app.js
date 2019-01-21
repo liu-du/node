@@ -66,7 +66,11 @@ mongoose
     'mongodb+srv://jimmy:mac.2018@cluster0-mzvi0.mongodb.net/messages?retryWrites=true'
   )
   .then(result => {
-    app.listen(8080);
+    const server = app.listen(8080);
+    const io = require('./socket').init(server);
+    io.on('connection', socket => {
+      console.log('client connected');
+    });
   })
   .then(result => {
     console.log('\nConnected\n');

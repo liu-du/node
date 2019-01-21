@@ -2,7 +2,6 @@ const { validationResult } = require('express-validator/check');
 const bcrypt = require('bcryptjs');
 const jwt = require('jsonwebtoken');
 const User = require('../models/user');
-const errHandler = require('../misc/error-handler');
 
 exports.signup = async (req, res, next) => {
   const errors = validationResult(req);
