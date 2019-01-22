@@ -55,7 +55,17 @@ app.use(
   '/graphql',
   graphqlHttp({
     schema: graphqlSchema,
-    rootValue: graphqlResolver
+    rootValue: graphqlResolver,
+    graphiql: true,
+    formatError(err) {
+      if (!err.originalError) {
+        return err;
+      }
+      const data = err.originalError.data;
+      const message = err.message || 'An error without message occured';
+      const code = err.originalError.code || 500;
+      return { message: message, status: code, data: data };
+    }
   })
 );
 
