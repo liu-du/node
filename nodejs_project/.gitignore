@@ -1,0 +1,14 @@
+*~
+.vscode/
+node_modules/
+misc/
+.DS_Store
+access.log
+server.key
+server.cert
+
+images/*
+data/*
+!data/invoices
+data/invoices/*
+!.gitkeep
