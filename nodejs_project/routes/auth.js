@@ -6,40 +6,57 @@ const User = require('../models/user');
 
 router.get('/login', authController.getLogin);
 
-router.post('/login', [
+router.post(
+  '/login',
+  [
     body('email', 'Please enter a valid email address.')
-        .isEmail()
-        .normalizeEmail(),
-    body('password', 'Please enter a password with only numbers and text and at least 5 characters.')
-        .isLength({ min: 5 })
-        .isAlphanumeric()
-        .trim()
-], authController.postLogin);
+      .isEmail()
+      .normalizeEmail(),
+    body(
+      'password',
+      'Please enter a password with only numbers and text and at least 5 characters.'
+    )
+      .isLength({ min: 5 })
+      .isAlphanumeric()
+      .trim()
+  ],
+  authController.postLogin
+);
 
 router.post('/logout', authController.postLogout);
 
 router.get('/signup', authController.getSignup);
 
-router.post('/signup', [
+router.post(
+  '/signup',
+  [
     body('email')
-        .trim()
-        .isEmail()
-        .withMessage('Please enter a valid email.')
-        .custom((value, {req}) => {
-            return User.findOne({email: value})
-                .then(userDoc => {
-                    if (userDoc) return Promise.reject('This email address is already registered, pick a different one.');
-                })
-        })
-        .normalizeEmail(),
-    body('password', 'Please enter a password with only numbers and text and at least 5 characters.')
-        .isLength({ min: 5 })
-        .isAlphanumeric()
-        .custom((value, { req }) => {
-            if (value !== req.body.confirmPassword) throw new Error('Passwords don\'t match.');
-            return true;
-        })
-], authController.postSignup);
+      .trim()
+      .isEmail()
+      .withMessage('Please enter a valid email.')
+      .custom((value, { req }) => {
+        return User.findOne({ email: value }).then(userDoc => {
+          if (userDoc)
+            return Promise.reject(
+              'This email address is already registered, pick a different one.'
+            );
+        });
+      })
+      .normalizeEmail(),
+    body(
+      'password',
+      'Please enter a password with only numbers and text and at least 5 characters.'
+    )
+      .isLength({ min: 5 })
+      .isAlphanumeric()
+      .custom((value, { req }) => {
+        if (value !== req.body.confirmPassword)
+          throw new Error("Passwords don't match.");
+        return true;
+      })
+  ],
+  authController.postSignup
+);
 
 router.get('/reset', authController.getReset);
 

@@ -5,3 +5,4 @@ misc/
 images/
 .DS_Store
 nodejs_project/data
+access.log
